@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EbaySelling", "EbaySelling\EbaySelling.csproj", "{7FB01EDA-62DC-473C-865A-3A8C411DBD73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EbaySdkLib", "EbaySdkLib\EbaySdkLib.csproj", "{76D94166-6612-447F-8033-F1C500A9D868}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EbaySdkLib.Tests", "UnitTestProject1\EbaySdkLib.Tests.csproj", "{20BD0D08-5C59-4BC9-A970-CDA5F577DA1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SellingTools_Lib", "EbayRestAPIv1\SellingTools_Lib.csproj", "{4399F1BA-BF5F-45D2-BC2A-05D7E5605452}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7FB01EDA-62DC-473C-865A-3A8C411DBD73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FB01EDA-62DC-473C-865A-3A8C411DBD73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FB01EDA-62DC-473C-865A-3A8C411DBD73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FB01EDA-62DC-473C-865A-3A8C411DBD73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76D94166-6612-447F-8033-F1C500A9D868}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76D94166-6612-447F-8033-F1C500A9D868}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76D94166-6612-447F-8033-F1C500A9D868}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76D94166-6612-447F-8033-F1C500A9D868}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20BD0D08-5C59-4BC9-A970-CDA5F577DA1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20BD0D08-5C59-4BC9-A970-CDA5F577DA1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20BD0D08-5C59-4BC9-A970-CDA5F577DA1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20BD0D08-5C59-4BC9-A970-CDA5F577DA1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4399F1BA-BF5F-45D2-BC2A-05D7E5605452}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4399F1BA-BF5F-45D2-BC2A-05D7E5605452}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4399F1BA-BF5F-45D2-BC2A-05D7E5605452}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4399F1BA-BF5F-45D2-BC2A-05D7E5605452}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
