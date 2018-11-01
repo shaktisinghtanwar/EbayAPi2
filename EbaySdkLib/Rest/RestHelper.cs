@@ -26,7 +26,9 @@ namespace EbaySdkLib
         public async Task<EbayAccessToken> GetToken(string AuthToken)
         {
             EbayToken ebayToken = new EbayToken();
-            return await ebayToken.GetAPI(AuthToken).ConfigureAwait(false) ;
+            return await ebayToken.GetAPI(AuthToken).ConfigureAwait(false);
+         
+
         }
 
         public async Task<EbayAccessToken> GetRefreshToken(string ExpiredAccessToken)

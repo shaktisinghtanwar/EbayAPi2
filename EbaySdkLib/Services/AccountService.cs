@@ -14,6 +14,7 @@ namespace EbaySdkLib
             PaymentpolicyService = new PaymentpolicyService(Token);
             ReturnPolicyService = new ReturnPolicyService(Token);
             }
+
         public FulfilmentPolicyService FulfilmentPolicyService { get; set; }
         public ProgramService ProgramService { get; set; }
         public PrivilegeService PrivilegeService { get; set; }

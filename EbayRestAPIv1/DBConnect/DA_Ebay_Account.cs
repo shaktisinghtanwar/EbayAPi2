@@ -179,7 +179,7 @@ namespace SellingTools_Lib.DBConnect
                 DbCommand comm = DataAccess.CreateCommand(ConnectionString);
                 // set the stored procedure name
                // comm.CommandText = "Ebay_FPAddFulfillmentPolicies";
-                comm.CommandText = "Insert into FulfillmentPolicy (Name,MarketPlaceId,HandlingTimeValue,HandlingTimeUnit) values('" + FPName + "','" + FPMarketPlaceID + "','" + FPHandlingTimeValue + "','" + FPHandlingTimeUnit + "')";
+                comm.CommandText = "Insert into FulfillmentPolicy(Name,MarketPlaceId,HandlingTimeValue,HandlingTimeUnit) values('" + FPName + "','" + FPMarketPlaceID + "','" + FPHandlingTimeValue + "','" + FPHandlingTimeUnit + "')";
 
                 DbParameter param = comm.CreateParameter();
                 param.ParameterName = "@FPName";

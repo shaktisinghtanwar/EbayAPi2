@@ -2,6 +2,7 @@
 using EbaySdkLib.Messages;
 using Newtonsoft.Json;
 using System;
+using System.Data.SqlClient;
 using System.Net;
 using System.Threading.Tasks;
 namespace EbaySdkLib
@@ -9,11 +10,12 @@ namespace EbaySdkLib
    public  class PrivilegeService
     {
        private string Token;
-
+      
        public PrivilegeService(string Token)
            {
        // TODO: Complete member initialization
-       this.Token = Token;
+              this.Token = Token;
+           
            }
       
      public async Task<Tuple<GetPrivilegesResponse,HttpStatusCode>>  GetPrivilage()

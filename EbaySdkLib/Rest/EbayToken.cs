@@ -7,6 +7,9 @@ using System.Web;
 using System.Collections.Generic;
 using EbaySdkLib.Constants;
 using EbaySdkLib.Models;
+using System.Text;
+using System.Net;
+using System.IO;
 
 namespace EbaySdkLib.Rest
 {
@@ -14,51 +17,86 @@ namespace EbaySdkLib.Rest
     {
         public async Task<EbayAccessToken> GetAPI(string AuthToken)
         {            
-            var baseUri = new Uri(ApplicationConstants.TokenUrl);
-            var encodedConsumerKey = HttpUtility.UrlEncode(ApplicationConstants.AppID);
-            var encodedConsumerKeySecret = HttpUtility.UrlEncode(ApplicationConstants.AppSecretkey);
-            var encodedPair = Base64Encode(String.Format("{0}:{1}", encodedConsumerKey, encodedConsumerKeySecret));
-            var encodedAuthToken = HttpUtility.UrlDecode(AuthToken);
-            encodedAuthToken = HttpUtility.UrlDecode(encodedAuthToken);
+            //var baseUri = new Uri(ApplicationConstants.TokenUrl);
+            //var encodedConsumerKey = HttpUtility.UrlEncode(ApplicationConstants.AppID);
+            //var encodedConsumerKeySecret = HttpUtility.UrlEncode(ApplicationConstants.AppSecretkey);
+            //var encodedPair = Base64Encode(String.Format("{0}:{1}", encodedConsumerKey, encodedConsumerKeySecret));
+            //var encodedAuthToken = HttpUtility.UrlDecode(AuthToken);
+            //encodedAuthToken = HttpUtility.UrlDecode(encodedAuthToken);
 
-            var requestToken = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(baseUri, "oauth2/token"),
-                Content = new StringContent("grant_type=authorization_code&code=" + encodedAuthToken + "&redirect_uri=BGUK_Logistics_-BGUKLogi-Seller-irgjzrql")
-            };
-            requestToken.Headers.TryAddWithoutValidation("Authorization", String.Format("Basic {0}", encodedPair));
-            requestToken.Content.Headers.ContentType = new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded");
+            //var requestToken = new HttpRequestMessage
+            //{
+            //    Method = HttpMethod.Post,
+            //    RequestUri = new Uri(baseUri, "oauth2/token"),
+            //    Content = new StringContent("grant_type=authorization_code&code=" + encodedAuthToken + "&redirect_uri=BGUK_Logistics_-BGUKLogi-Seller-irgjzrql")
+            //};
+            //requestToken.Headers.TryAddWithoutValidation("Authorization", String.Format("Basic {0}", encodedPair));
+            //requestToken.Content.Headers.ContentType = new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded");
             
-            HttpClient httpClient = new HttpClient();
+            //HttpClient httpClient = new HttpClient();
 
 
-                var bearerResult = await httpClient.SendAsync(requestToken).ConfigureAwait(false);
+            //    var bearerResult = await httpClient.SendAsync(requestToken).ConfigureAwait(false);
 
 
-            var bearerData = await bearerResult.Content.ReadAsStringAsync();
+            //var bearerData = await bearerResult.Content.ReadAsStringAsync();
 
-            if (JObject.Parse(bearerData)["error_description"] != null)
-            {
-                var error = JObject.Parse(bearerData)["error_description"].ToString();
-                EbayAccessToken objReturn = new EbayAccessToken() { IsError = true, AccessToken = null, ErrorDescription = error, ExpiredTime = null };
-                var tReturn = new Task<EbayAccessToken>(() => { return objReturn; });
-                tReturn.Start();
-                return tReturn.Result;
-            }
-            else
-            {
-                var bearerToken = JObject.Parse(bearerData)["access_token"].ToString();
-                int ExpiredIn = Convert.ToInt32(JObject.Parse(bearerData)["expires_in"].ToString() ?? "0");
-                var refreshToken = JObject.Parse(bearerData)["refresh_token"].ToString();
-                int refreshTokenExpires = Convert.ToInt32(JObject.Parse(bearerData)["refresh_token_expires_in"].ToString() ?? "0");
-                EbayAccessToken objReturn = new EbayAccessToken() { IsError = false, AccessToken = bearerToken, ErrorDescription = null, ExpiredTime = ExpiredIn, RefreshToken = refreshToken, RefreshTokenExpires = refreshTokenExpires };
-                var tReturn = new Task<EbayAccessToken>(() => { return objReturn; });
-                tReturn.Start();
-                return tReturn.Result;
-            }
+            //if (JObject.Parse(bearerData)["error_description"] != null)
+            //{
+            //    var error = JObject.Parse(bearerData)["error_description"].ToString();
+            //    EbayAccessToken objReturn = new EbayAccessToken() { IsError = true, AccessToken = null, ErrorDescription = error, ExpiredTime = null };
+            //    var tReturn = new Task<EbayAccessToken>(() => { return objReturn; });
+            //    tReturn.Start();
+            //    return tReturn.Result;
+            //}
+            //else
+            //{
+            //    var bearerToken = JObject.Parse(bearerData)["access_token"].ToString();
+            //    int ExpiredIn = Convert.ToInt32(JObject.Parse(bearerData)["expires_in"].ToString() ?? "0");
+            //    var refreshToken = JObject.Parse(bearerData)["refresh_token"].ToString();
+            //    int refreshTokenExpires = Convert.ToInt32(JObject.Parse(bearerData)["refresh_token_expires_in"].ToString() ?? "0");
+            //    EbayAccessToken objReturn = new EbayAccessToken() { IsError = false, AccessToken = bearerToken, ErrorDescription = null, ExpiredTime = ExpiredIn, RefreshToken = refreshToken, RefreshTokenExpires = refreshTokenExpires };
+            //    var tReturn = new Task<EbayAccessToken>(() => { return objReturn; });
+            //    tReturn.Start();
+            //    return tReturn.Result;
+            //}
+            var clientString = ApplicationConstants.AppID + ":" + ApplicationConstants.AppSecretkey;
+        byte[] clientEncode = Encoding.UTF8.GetBytes(clientString);
+        var credentials = "Basic " + System.Convert.ToBase64String(clientEncode);
 
-            
+        HttpWebRequest request = WebRequest.Create("https://api.sandbox.ebay.com/identity/v1/oauth2/token")
+            as HttpWebRequest;
+        var baseUri = new Uri(ApplicationConstants.TokenUrl);
+        request.Method = "POST";
+        request.ContentType = "application/x-www-form-urlencoded";
+
+        request.Headers.Add(HttpRequestHeader.Authorization, credentials);
+
+        var codeEncoded = HttpUtility.UrlEncode(AuthToken);
+
+        var body = "grant_type=authorization_code&code=" + codeEncoded + "&redirect_uri=" + baseUri;
+
+        // Encode the parameters as form data
+        byte[] formData = UTF8Encoding.UTF8.GetBytes(body);
+        request.ContentLength = formData.Length;
+
+        // Send the request
+        using (Stream post = request.GetRequestStream())
+        {
+            post.Write(formData, 0, formData.Length);
+        }
+
+        // Pick up the response
+        string result = null;
+        using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+        {
+            StreamReader reader = new StreamReader(response.GetResponseStream());
+            result = reader.ReadToEnd();
+        }
+
+       
+
+        return null;
 
         }
 

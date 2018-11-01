@@ -687,47 +687,55 @@ namespace UnitTestProject1
         [TestMethod]
         public void getInventoryItem()
             {
-             string token = UsingTokenMethod();
-            InventoryApiService _inventoryApiService = new InventoryApiService(token);
-            string sku = "GP-Cam-01";
-            var response = _inventoryApiService.getInventoryItemService(sku).Result;
-            if (response.Item2.ToString() == "OK")
+                try
                 {
-                Assert.IsNotNull(response.Item1);
+                    string token = UsingTokenMethod();
+                    InventoryApiService _inventoryApiService = new InventoryApiService(token);
+                    string sku = "GP-Cam-01";
+                    var response = _inventoryApiService.getInventoryItemService(sku).Result;
+                    //if (response.Item2.ToString() == "OK")
+                    //    {
+                    //    Assert.IsNotNull(response.Item1);
+                    //    }
+                    //else
+                    //    {
+                    //    Assert.Fail(response.Item2.ToString());
+                    //    }
+                    switch (response.Item2)
+                    {
+                        case System.Net.HttpStatusCode.OK:
+                            {
+                                //Add to DB
+
+                                int InventoryDBID = SellingTools_Lib.DBConnect.DA_Ebay_Inventory.Add_GetInventoryItem(_cstr, response.Item1.sku, response.Item1.condition);
+                                SellingTools_Lib.DBConnect.DA_Ebay_Inventory.Add_InventoryProduct(_cstr, InventoryDBID, response.Item1.product.title, response.Item1.product.description, response.Item1.product.imageUrls.ToString());
+                                return;
+
+                            }
+
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [getInventoryItem] - " + response.Item2.ToString());
+
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [getInventoryItem] - " + response.Item2.ToString());
+                            }
+
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [getInventoryItem] - " + response.Item2.ToString());
+
+                            }
+                    }
+
                 }
-            else
+                catch (Exception)
                 {
-                Assert.Fail(response.Item2.ToString());
+                    
+                    throw;
                 }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-
-                        int InventoryDBID = SellingTools_Lib.DBConnect.DA_Ebay_Inventory.Add_GetInventoryItem(_cstr,response.Item1.sku,response.Item1.condition);
-                         SellingTools_Lib.DBConnect.DA_Ebay_Inventory.Add_InventoryProduct(_cstr, InventoryDBID, response.Item1.product.title, response.Item1.product.description, response.Item1.product.imageUrls.ToString());   
-                        return;
-                      
-                    }
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [getInventoryItem] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [getInventoryItem] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [getInventoryItem] - " + response.Item2.ToString());
-
-                    }
-            }
-
 
             }
         [TestMethod]
@@ -1063,11 +1071,13 @@ namespace UnitTestProject1
         [TestMethod]
         public void bulkMigrateListing()
             {
+                try
+                {
 
-            string token = UsingTokenMethod();
-            InventoryApiService _inventoryApiService = new InventoryApiService(token);
-            BulkMigrateListingRequest bulkMigrateListingRequest = new BulkMigrateListingRequest();
-            bulkMigrateListingRequest.requests = new MigrateListRequest[]
+                    string token = UsingTokenMethod();
+                    InventoryApiService _inventoryApiService = new InventoryApiService(token);
+                    BulkMigrateListingRequest bulkMigrateListingRequest = new BulkMigrateListingRequest();
+                    bulkMigrateListingRequest.requests = new MigrateListRequest[]
             {
                 new MigrateListRequest()
                 {
@@ -1083,50 +1093,54 @@ namespace UnitTestProject1
                 }
 
             };
-            var response = _inventoryApiService.bulkMigrateListingService(bulkMigrateListingRequest).Result;
-            //if (response.Item2.ToString() == "OK")
-            //    {
-            //    Assert.IsNotNull(response.Item1);
-            //    }
-            //else
-            //    {
-            //    Assert.Fail(response.Item2.ToString());
-            //    }
+                    var response = _inventoryApiService.bulkMigrateListingService(bulkMigrateListingRequest).Result;
+                    //if (response.Item2.ToString() == "OK")
+                    //    {
+                    //    Assert.IsNotNull(response.Item1);
+                    //    }
+                    //else
+                    //    {
+                    //    Assert.Fail(response.Item2.ToString());
+                    //    }
 
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
+                    switch (response.Item2)
                     {
-                        //Add to DB
-                        foreach (EbaySdkLib.Models.MigrateListingRespons _list in response.Item1.responses)
-                        {
-                            int InventoryItemsDBID = SellingTools_Lib.DBConnect.DA_Ebay_Inventory.Add_bulkMigrateListing(_cstr, _list.statusCode, _list.listingId, _list.marketplaceId, _list.inventoryItemGroupKey);
-                        }
-                        return;
-                       
-                    }
+                        case System.Net.HttpStatusCode.OK:
+                            {
+                                //Add to DB
+                                foreach (EbaySdkLib.Models.MigrateListingRespons _list in response.Item1.responses)
+                                {
+                                    int InventoryItemsDBID = SellingTools_Lib.DBConnect.DA_Ebay_Inventory.Add_bulkMigrateListing(_cstr, _list.statusCode, _list.listingId, _list.marketplaceId, _list.inventoryItemGroupKey);
+                                }
+                                return;
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [BulkMigrateListing] - " + response.Item2.ToString());
+                            }
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [BulkMigrateListing] - " + response.Item2.ToString());
-                    }
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [BulkMigrateListing] - " + response.Item2.ToString());
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [BulkMigrateListing] - " + response.Item2.ToString());
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [BulkMigrateListing] - " + response.Item2.ToString());
+                            }
 
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [BulkMigrateListing] - " + response.Item2.ToString());
+
+                            }
                     }
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
+
             }
-
-            }
-
-
-
+        
         #endregion
 
         #region ProdCompatibility

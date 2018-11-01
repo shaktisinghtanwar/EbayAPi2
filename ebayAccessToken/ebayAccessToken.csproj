@@ -1,19 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4399F1BA-BF5F-45D2-BC2A-05D7E5605452}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{63A13BD3-81F5-4488-BB34-C94EE9B13B30}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SellingTools_Lib</RootNamespace>
-    <AssemblyName>SellingTools_Lib</AssemblyName>
+    <RootNamespace>ebayAccessToken</RootNamespace>
+    <AssemblyName>ebayAccessToken</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>e2caa76b</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -31,43 +32,39 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SlowCheetah.Xdt, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SlowCheetah.Xdt.1.1.7-beta\lib\SlowCheetah.Xdt.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DBConnect\DataAccess.cs" />
-    <Compile Include="DBConnect\DA_Ebay_Account.cs" />
-    <Compile Include="DBConnect\DA_Ebay_Compliance.cs" />
-    <Compile Include="DBConnect\DA_Ebay_Fullfillment.cs" />
-    <Compile Include="DBConnect\DA_Ebay_Inventory.cs" />
-    <Compile Include="Ebay\Account.cs" />
-    <Compile Include="Ebay\Compliance.cs" />
-    <Compile Include="Ebay\Fullfillment.cs" />
-    <Compile Include="Ebay\Inventory.cs" />
-    <Compile Include="Enums\AccessTokenType.cs" />
-    <Compile Include="log\ErrorLog.cs" />
-    <Compile Include="Models\AccessToken.cs" />
+    <Compile Include="EbayAccessTokenby.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EbayRestAPIv1\SellingTools_Lib.csproj">
+      <Project>{4399f1ba-bf5f-45d2-bc2a-05d7e5605452}</Project>
+      <Name>SellingTools_Lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EbaySdkLib\EbaySdkLib.csproj">
       <Project>{76d94166-6612-447f-8033-f1c500a9d868}</Project>
       <Name>EbaySdkLib</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <ProjectReference Include="..\EbaySelling\EbaySelling.csproj">
+      <Project>{7fb01eda-62dc-473c-865a-3a8c411dbd73}</Project>
+      <Name>EbaySelling</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UnitTestProject1\EbaySdkLib.Tests.csproj">
+      <Project>{20bd0d08-5c59-4bc9-a970-cda5f577da1a}</Project>
+      <Name>EbaySdkLib.Tests</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

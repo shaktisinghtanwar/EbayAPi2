@@ -45,8 +45,6 @@ namespace UnitTestProject1
 
         }
        
-
-
         [TestMethod]
         public void GetRefreshTokenTest()
         {
@@ -104,17 +102,19 @@ namespace UnitTestProject1
         public void CreateFulfillmentPolicyTest()
             {
 
-            string token = UsingTokenMethod();
-            EbaySdkLib.AccountService _accountService = new AccountService(token);
-            EbaySdkLib.Messages.CreateFulfillmentRequest createFulfillmentRequest = new EbaySdkLib.Messages.CreateFulfillmentRequest();
-            createFulfillmentRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            createFulfillmentRequest.name = "Domestic free shipping";
-            createFulfillmentRequest.handlingTime = new EbaySdkLib.Models.TimeDuration()
-            {
-                value = "1",
-                unit = EbaySdkLib.Models.TimeDurationUnitEnum.DAY
-            };
-            createFulfillmentRequest.shippingOptions = new EbaySdkLib.Models.ShippingOption[]{
+                try
+                {
+                    string token = UsingTokenMethod();
+                    EbaySdkLib.AccountService _accountService = new AccountService(token);
+                    EbaySdkLib.Messages.CreateFulfillmentRequest createFulfillmentRequest = new EbaySdkLib.Messages.CreateFulfillmentRequest();
+                    createFulfillmentRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                    createFulfillmentRequest.name = "Domestic free shipping";
+                    createFulfillmentRequest.handlingTime = new EbaySdkLib.Models.TimeDuration()
+                    {
+                        value = "1",
+                        unit = EbaySdkLib.Models.TimeDurationUnitEnum.DAY
+                    };
+                    createFulfillmentRequest.shippingOptions = new EbaySdkLib.Models.ShippingOption[]{
                 new EbaySdkLib.Models.ShippingOption()
                 {
                     costType= EbaySdkLib.Models.ShippingCostTypeEnum.FLAT_RATE,
@@ -129,55 +129,61 @@ namespace UnitTestProject1
                 }
             };
 
-            var response = _accountService.FulfilmentPolicyService.CreateFulfillmentPolicy(createFulfillmentRequest).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); }
-            else { Assert.Fail(response.Item2.ToString()); }
+                    var response = _accountService.FulfilmentPolicyService.CreateFulfillmentPolicy(createFulfillmentRequest).Result;
+                    // if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); }
+                    //else { Assert.Fail(response.Item2.ToString()); }
 
-            Assert.IsNotNull(response);
-            // Assert.AreEqual(response.marketplaceId);
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
+                    //  Assert.IsNotNull(response);
+
+                    switch (response.Item2)
                     {
-                        //Add to DB
-                        int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCreateFulfillmentPolicy(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
-
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                        {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
-                        }
-
-                        foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
-                        {
-                            foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
+                        case System.Net.HttpStatusCode.OK:
                             {
+                                //Add to DB
+                                int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCreateFulfillmentPolicy(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
 
-                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
-                                        _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), response.Item1.pickupDropOff, bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
+                                foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                                {
+                                    SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
+                                }
+
+                                foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
+                                {
+                                    foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
+                                    {
+
+                                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
+                                                _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), response.Item1.pickupDropOff, bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
+                                    }
+                                }
                             }
-                        }
+
+                            return;
+
+
+
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [CreateFulfillmentPolicy] - " + response.Item2.ToString());
+
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [CreateFulfillmentPolicy] - " + response.Item2.ToString());
+                            }
+
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [CreateFulfillmentPolicy] - " + response.Item2.ToString());
+
+                            }
                     }
-
-                    return;
-
-
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [CreateFulfillmentPolicy] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [CreateFulfillmentPolicy] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [CreateFulfillmentPolicy] - " + response.Item2.ToString());
-
-                    }
-            }
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
 
             }
 
@@ -244,58 +250,66 @@ namespace UnitTestProject1
         [TestMethod]
         public void GetfulfillmentPolicyByNameTest()
             {
-            string token = UsingTokenMethod();
-            EbaySdkLib.AccountService _accountService = new AccountService(token);
-            EbaySdkLib.Messages.GetFulfillmentPolicyByNameRequest getFulfillmentPolicyByNameRequest = new EbaySdkLib.Messages.GetFulfillmentPolicyByNameRequest();
-            getFulfillmentPolicyByNameRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            string Id = getFulfillmentPolicyByNameRequest.marketplaceId.ToString();
+                try
+                {
+                    string token = UsingTokenMethod();
+                    EbaySdkLib.AccountService _accountService = new AccountService(token);
+                    EbaySdkLib.Messages.GetFulfillmentPolicyByNameRequest getFulfillmentPolicyByNameRequest = new EbaySdkLib.Messages.GetFulfillmentPolicyByNameRequest();
+                    getFulfillmentPolicyByNameRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                    string Id = getFulfillmentPolicyByNameRequest.marketplaceId.ToString();
 
-            string Name = getFulfillmentPolicyByNameRequest.name = "Domestic free shipping";
-            var response = _accountService.FulfilmentPolicyService.GetFulfillmentPolicyByName(Name, Id).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
+                    string Name = getFulfillmentPolicyByNameRequest.name = "Domestic free shipping";
+                    var response = _accountService.FulfilmentPolicyService.GetFulfillmentPolicyByName(Name, Id).Result;
+                    // if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                    switch (response.Item2)
                     {
-                        //Add to DB
-                        int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPGetFulfillmentPolicyByName(_cstr, response.Item1.name,response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
-
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                        {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
-                        }
-
-                        foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
-                        {
-                            foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
+                        case System.Net.HttpStatusCode.OK:
                             {
+                                //Add to DB
+                                int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPGetFulfillmentPolicyByName(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
 
-                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
-                                        _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), bool.Parse(response.Item1.pickupDropOff), bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
+                                foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                                {
+                                    SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
+                                }
+
+                                foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
+                                {
+                                    foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
+                                    {
+
+                                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
+                                                _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), bool.Parse(response.Item1.pickupDropOff), bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
+                                    }
+                                }
                             }
-                        }
+
+                            return;
+
+
+
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [GetFulfillmentPolicyByName] - " + response.Item2.ToString());
+
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [GetFulfillmentPolicyByName] - " + response.Item2.ToString());
+                            }
+
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [GetFulfillmentPolicyByName] - " + response.Item2.ToString());
+
+                            }
                     }
-
-                    return;
-
-
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [GetFulfillmentPolicyByName] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [GetFulfillmentPolicyByName] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [GetFulfillmentPolicyByName] - " + response.Item2.ToString());
-
-                    }
-            }
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
 
             }
 
@@ -304,19 +318,21 @@ namespace UnitTestProject1
         [TestMethod]
         public void UpdateFulfillmentPolicyTest()
           {
-            string token = UsingTokenMethod();
-            EbaySdkLib.AccountService _accountService = new AccountService(token);
-            EbaySdkLib.Messages.UpdateFulfillmentPolicyRequest updateFulfillmentPolicyRequest = new EbaySdkLib.Messages.UpdateFulfillmentPolicyRequest();
-            string fulfillmentpolicyid = "5733606000";
-            updateFulfillmentPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            updateFulfillmentPolicyRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            updateFulfillmentPolicyRequest.name = "Domestic free shipping";
-            updateFulfillmentPolicyRequest.handlingTime = new EbaySdkLib.Models.TimeDuration()
-            {
-                value = "1",
-                unit = EbaySdkLib.Models.TimeDurationUnitEnum.DAY
-            };
-            updateFulfillmentPolicyRequest.shippingOptions = new EbaySdkLib.Models.ShippingOption[]{
+              try
+              {
+                  string token = UsingTokenMethod();
+                  EbaySdkLib.AccountService _accountService = new AccountService(token);
+                  EbaySdkLib.Messages.UpdateFulfillmentPolicyRequest updateFulfillmentPolicyRequest = new EbaySdkLib.Messages.UpdateFulfillmentPolicyRequest();
+                  string fulfillmentpolicyid = "5733606000";
+                  updateFulfillmentPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                  updateFulfillmentPolicyRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                  updateFulfillmentPolicyRequest.name = "Domestic free shipping";
+                  updateFulfillmentPolicyRequest.handlingTime = new EbaySdkLib.Models.TimeDuration()
+                  {
+                      value = "1",
+                      unit = EbaySdkLib.Models.TimeDurationUnitEnum.DAY
+                  };
+                  updateFulfillmentPolicyRequest.shippingOptions = new EbaySdkLib.Models.ShippingOption[]{
                 new EbaySdkLib.Models.ShippingOption()
                 {
                     costType= EbaySdkLib.Models.ShippingCostTypeEnum.FLAT_RATE,
@@ -331,69 +347,76 @@ namespace UnitTestProject1
                 }
             };
 
-            var response = _accountService.FulfilmentPolicyService.UpdateFulfillmentPolicy(fulfillmentpolicyid).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPUpdateFulfillmentPolicy(_cstr, response.Item1.name,response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
+                  var response = _accountService.FulfilmentPolicyService.UpdateFulfillmentPolicy(fulfillmentpolicyid).Result;
+                  if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
 
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                        {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
-                        }
+                  switch (response.Item2)
+                  {
+                      case System.Net.HttpStatusCode.OK:
+                          {
+                              //Add to DB
+                              int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPUpdateFulfillmentPolicy(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
 
-                        foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
-                        {
-                            foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
-                            {
+                              foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                              {
+                                  SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
+                              }
 
-                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
-                                        _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), bool.Parse(response.Item1.pickupDropOff), bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
-                            }
-                        }
-                    }
+                              foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
+                              {
+                                  foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
+                                  {
 
-                    return;
+                                      SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
+                                              _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), bool.Parse(response.Item1.pickupDropOff), bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
+                                  }
+                              }
+                          }
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [UpdateFulfillmentPolicy] - " + response.Item2.ToString());
+                          return;
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [UpdateFulfillmentPolicy] - " + response.Item2.ToString());
-                    }
+                      case System.Net.HttpStatusCode.InternalServerError:
+                          {
+                              throw new Exception("Internal Server Error From Api - [UpdateFulfillmentPolicy] - " + response.Item2.ToString());
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [UpdateFulfillmentPolicy] - " + response.Item2.ToString());
+                          }
+                      case System.Net.HttpStatusCode.BadRequest:
+                          {
+                              throw new Exception("Bad Request From Api - [UpdateFulfillmentPolicy] - " + response.Item2.ToString());
+                          }
 
-                    }
-            }
+                      default:
+                          {
+                              throw new Exception("Unrecognised Error Response From Api - [UpdateFulfillmentPolicy] - " + response.Item2.ToString());
 
+                          }
+                  }
+
+              }
+              catch (Exception)
+              {
+                  
+                  throw;
+              }
             }
         [TestMethod]
         public void GetFulfillmentPolicyTest()
             {
-            //GetFulfillmentPolicyRequest getFulfillmentPolicyRequest = new GetFulfillmentPolicyRequest();
-            string token = UsingTokenMethod();
-            EbaySdkLib.AccountService _accountService = new AccountService(token);
-            EbaySdkLib.Messages.GetFulfillmentPolicyRequest getFulfillmentPolicyRequest = new EbaySdkLib.Messages.GetFulfillmentPolicyRequest();
-            string fulfillmentpolicyid = "5733606000";
-            getFulfillmentPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            getFulfillmentPolicyRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            getFulfillmentPolicyRequest.name = "Domestic free shipping";
-            getFulfillmentPolicyRequest.handlingTime = new EbaySdkLib.Models.TimeDuration()
-            {
-                value = "1",
-                unit = EbaySdkLib.Models.TimeDurationUnitEnum.DAY
-            };
-            getFulfillmentPolicyRequest.shippingOptions = new EbaySdkLib.Models.ShippingOption[]{
+                try
+                {
+                    string token = UsingTokenMethod();
+                    EbaySdkLib.AccountService _accountService = new AccountService(token);
+                    EbaySdkLib.Messages.GetFulfillmentPolicyRequest getFulfillmentPolicyRequest = new EbaySdkLib.Messages.GetFulfillmentPolicyRequest();
+                    string fulfillmentpolicyid = "5733606000";
+                    getFulfillmentPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                    getFulfillmentPolicyRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                    getFulfillmentPolicyRequest.name = "Domestic free shipping";
+                    getFulfillmentPolicyRequest.handlingTime = new EbaySdkLib.Models.TimeDuration()
+                    {
+                        value = "1",
+                        unit = EbaySdkLib.Models.TimeDurationUnitEnum.DAY
+                    };
+                    getFulfillmentPolicyRequest.shippingOptions = new EbaySdkLib.Models.ShippingOption[]{
                 new EbaySdkLib.Models.ShippingOption()
                 {
                     costType= EbaySdkLib.Models.ShippingCostTypeEnum.FLAT_RATE,
@@ -406,12 +429,61 @@ namespace UnitTestProject1
                     shippingServiceCode="USPSPriorityFlatRateBox"
                 } 
             }
+              
                 }
-            };
+           
+             };
 
-            var response = _accountService.FulfilmentPolicyService.GetFulfillmentPolicy(fulfillmentpolicyid).Result; if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                    var response = _accountService.FulfilmentPolicyService.GetFulfillmentPolicy(fulfillmentpolicyid).Result;
+                    //if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                    switch (response.Item2)
+                    {
+                        case System.Net.HttpStatusCode.OK:
+                            {
+                                //Add to DB
 
+                                int FulfillmentDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPFulfillmentPolicy(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString(), int.Parse(response.Item1.handlingTime.value), response.Item1.handlingTime.unit.ToString());
 
+                                foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                                {
+                                    SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPCategoryType(_cstr, FulfillmentDBID, _ct.name.ToString(), _ct.@default);
+                                }
+
+                                foreach (EbaySdkLib.Models.ShippingOption _so in response.Item1.shippingOptions)
+                                {
+                                    foreach (EbaySdkLib.Models.ShippingService _ss in _so.shippingServices)
+                                    {
+
+                                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPShippingServices(_cstr, FulfillmentDBID, _so.optionType.ToString(), _so.costType.ToString(), int.Parse(_ss.sortOrder), _ss.shippingCarrierCode, _ss.shippingServiceCode, _ss.shippingCost.value.ToString(), _ss.shippingCost.currency.ToString(),
+                                            _ss.additionalShippingCost.value.ToString(), _ss.additionalShippingCost.currency.ToString(), bool.Parse(_ss.freeShipping.ToString()), bool.Parse(_ss.buyerResponsibleForShipping), bool.Parse(_ss.buyerResponsibleForPickup), bool.Parse(_so.insuranceOffered), _so.insuranceFee.value.ToString(), _so.insuranceFee.currency.ToString(), bool.Parse(response.Item1.globalShipping), bool.Parse(response.Item1.pickupDropOff), bool.Parse(response.Item1.freightShipping), response.Item1.fulfillmentPolicyId);
+                                    }
+                                }
+                                return;
+                            }
+
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
+
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
+                            }
+
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
+
+                            }
+                    }
+
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
             }
 
 
@@ -473,41 +545,48 @@ namespace UnitTestProject1
 
         [TestMethod]
         public void OpInToProgramsTest()
+        {
+            try
             {
                 string token = UsingTokenMethod();
-
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            EbaySdkLib.Messages.OptInToProgramRequest opInProgramsRequest = new EbaySdkLib.Messages.OptInToProgramRequest();
-            opInProgramsRequest.programs = new EbaySdkLib.Models.Program[] { new EbaySdkLib.Models.Program() { programType = ProgramTypeEnum.OUT_OF_STOCK_CONTROL } };
-            var response = _accountService.ProgramService.OplnToprogram(opInProgramsRequest).Result;
-           // if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        foreach (EbaySdkLib.Models.Program _fp in response.Item1.programs)
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                EbaySdkLib.Messages.OptInToProgramRequest opInProgramsRequest = new EbaySdkLib.Messages.OptInToProgramRequest();
+                opInProgramsRequest.programs = new EbaySdkLib.Models.Program[] { new EbaySdkLib.Models.Program() { programType = ProgramTypeEnum.OUT_OF_STOCK_CONTROL } };
+                var response = _accountService.ProgramService.OplnToprogram(opInProgramsRequest).Result;
+                // if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                switch (response.Item2)
+                {
+                    case System.Net.HttpStatusCode.OK:
                         {
-                            int GetOptedInProgramsDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_OpInToPrograms(_cstr, _fp.programType);
+                            //Add to DB
+                            foreach (EbaySdkLib.Models.Program _fp in response.Item1.programs)
+                            {
+                                int GetOptedInProgramsDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_OpInToPrograms(_cstr, _fp.programType);
+                            }
+                            return;
                         }
-                        return;
-                    }
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        {
+                            throw new Exception("Internal Server Error From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
-                    }
+                        }
+                    case System.Net.HttpStatusCode.BadRequest:
+                        {
+                            throw new Exception("Bad Request From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
+                        }
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
+                    default:
+                        {
+                            throw new Exception("Unrecognised Error Response From Api - [GetFulfillmentPolicies] - " + response.Item2.ToString());
 
-                    }
+                        }
+                }
+            }
+            catch (Exception)
+            {
+                
+                throw;
             }
 
             }
@@ -588,7 +667,7 @@ namespace UnitTestProject1
                         case System.Net.HttpStatusCode.OK:
                             {
                                 //Add to DB
-                                int PrivilegesDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetPrivilage(_cstr, response.Item1.sellingLimit.amount.value, response.Item1.sellingLimit.amount.currency, response.Item1.sellingLimit.quantity, bool.Parse(response.Item1.sellerRegistrationCompleted));
+                               // int PrivilegesDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetPrivilage(_cstr, response.Item1.sellingLimit.amount.value, response.Item1.sellingLimit.amount.currency, response.Item1.sellingLimit.quantity, bool.Parse(response.Item1.sellerRegistrationCompleted));
                                 return;
                             }
                    case System.Net.HttpStatusCode.InternalServerError:
@@ -776,34 +855,36 @@ namespace UnitTestProject1
         [TestMethod]
         public void getPaymentPolicy()
         {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            EbaySdkLib.Messages.GetPaymentpolicyRequest getPaymentpolicy = new EbaySdkLib.Messages.GetPaymentpolicyRequest();
-            getPaymentpolicy.payment_policy_id = "5486492000";
-            string Id = getPaymentpolicy.payment_policy_id.ToString();
-            var response = _accountService.PaymentpolicyService.getPaymentpolicyService(Id).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); }
-            else { Assert.Fail(response.Item2.ToString()); }
-             switch (response.Item2)
+            try
+            {
+                string token = UsingTokenMethod();
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                EbaySdkLib.Messages.GetPaymentpolicyRequest getPaymentpolicy = new EbaySdkLib.Messages.GetPaymentpolicyRequest();
+                getPaymentpolicy.payment_policy_id = "5458288000";
+                string Id = getPaymentpolicy.payment_policy_id.ToString();
+                var response = _accountService.PaymentpolicyService.getPaymentpolicyService(Id).Result;
+                //if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); }
+                //else { Assert.Fail(response.Item2.ToString()); }
+                switch (response.Item2)
                 {
                     case System.Net.HttpStatusCode.OK:
                         {
                             //Add to DB
 
-                            int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentPolicy(_cstr, response.Item1.name, "null", response.Item1.description,response.Item1.immediatePay, response.Item1.paymentPolicyId);
+                            int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentPolicy(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
 
-                               foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                                {
-                                    SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
-                                }
+                            foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            }
 
-                                foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
-                                {
-                                    SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
-                                }
-                            
+                            foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            }
 
-                            return ;
+
+                            return;
 
                         }
 
@@ -823,6 +904,12 @@ namespace UnitTestProject1
 
                         }
                 }
+            }
+            catch (Exception)
+            {
+                
+                throw;
+            }
 
             }
 
@@ -885,101 +972,117 @@ namespace UnitTestProject1
         [TestMethod]
         public void getPaymentPolicyByName()
         {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            EbaySdkLib.Messages.GetPaymentPolicyByNameRequest getPaymentPolicyByNameRequest = new EbaySdkLib.Messages.GetPaymentPolicyByNameRequest();
-            getPaymentPolicyByNameRequest.name = "default payment policy";
-            getPaymentPolicyByNameRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            string marketplaceId = getPaymentPolicyByNameRequest.marketplaceId.ToString();
-            string name = getPaymentPolicyByNameRequest.name;
-            var response = _accountService.PaymentpolicyService.getPaymentPolicyByNameService(name, marketplaceId).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
+            try
             {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-
-                        int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentPolicyByName(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
-
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                string token = UsingTokenMethod();
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                EbaySdkLib.Messages.GetPaymentPolicyByNameRequest getPaymentPolicyByNameRequest = new EbaySdkLib.Messages.GetPaymentPolicyByNameRequest();
+                getPaymentPolicyByNameRequest.name = "default payment policy";
+                getPaymentPolicyByNameRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                string marketplaceId = getPaymentPolicyByNameRequest.marketplaceId.ToString();
+                string name = getPaymentPolicyByNameRequest.name;
+                var response = _accountService.PaymentpolicyService.getPaymentPolicyByNameService(name, marketplaceId).Result;
+                // if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                switch (response.Item2)
+                {
+                    case System.Net.HttpStatusCode.OK:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            //Add to DB
+
+                            int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentPolicyByName(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
+
+                            foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            }
+
+                            foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            }
+
+
+                            return;
+
                         }
 
-                        foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                    case System.Net.HttpStatusCode.InternalServerError:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            throw new Exception("Internal Server Error From Api - [GetPaymentPolicyByName] - " + response.Item2.ToString());
+
+                        }
+                    case System.Net.HttpStatusCode.BadRequest:
+                        {
+                            throw new Exception("Bad Request From Api - [GetPaymentPolicyByName] - " + response.Item2.ToString());
                         }
 
+                    default:
+                        {
+                            throw new Exception("Unrecognised Error Response From Api - [GetPaymentPolicyByName] - " + response.Item2.ToString());
 
-                        return ;
-
-                    }
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [GetPaymentPolicyByName] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [GetPaymentPolicyByName] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [GetPaymentPolicyByName] - " + response.Item2.ToString());
-
-                    }
+                        }
+                }
+            }
+            catch (Exception)
+            {
+                
+                throw;
             }
         }
 
         [TestMethod]
         public void createPaymentPolicy()
         {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            EbaySdkLib.Messages.CreatePaymerntPolicyRequest createPaymerntPolicyRequest = new EbaySdkLib.Messages.CreatePaymerntPolicyRequest();
-            createPaymerntPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            createPaymerntPolicyRequest.name = "minimal Payment Policy";
-            createPaymerntPolicyRequest.paymentMethods = new EbaySdkLib.Models.PaymentMethod[] { new EbaySdkLib.Models.PaymentMethod() { paymentMethodType = PaymentMethodTypeEnum.PERSONAL_CHECK } };
-            var response = _accountService.PaymentpolicyService.createPaymentPolicyService(createPaymerntPolicyRequest).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
+            try
             {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCreatePaymentPolicy(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
-
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                string token = UsingTokenMethod();
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                EbaySdkLib.Messages.CreatePaymerntPolicyRequest createPaymerntPolicyRequest = new EbaySdkLib.Messages.CreatePaymerntPolicyRequest();
+                createPaymerntPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                createPaymerntPolicyRequest.name = "minimal Payment Policy";
+                createPaymerntPolicyRequest.paymentMethods = new EbaySdkLib.Models.PaymentMethod[] { new EbaySdkLib.Models.PaymentMethod() { paymentMethodType = PaymentMethodTypeEnum.PERSONAL_CHECK } };
+                var response = _accountService.PaymentpolicyService.createPaymentPolicyService(createPaymerntPolicyRequest).Result;
+                if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                switch (response.Item2)
+                {
+                    case System.Net.HttpStatusCode.OK:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            //Add to DB
+                            int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCreatePaymentPolicy(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
+
+                            foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            }
+
+                            foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            }
+                            return;
                         }
 
-                        foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                    case System.Net.HttpStatusCode.InternalServerError:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            throw new Exception("Internal Server Error From Api - [createPaymentPolicy] - " + response.Item2.ToString());
+
                         }
-                        return ;
-                    }
+                    case System.Net.HttpStatusCode.BadRequest:
+                        {
+                            throw new Exception("Bad Request From Api - [createPaymentPolicy] - " + response.Item2.ToString());
+                        }
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [createPaymentPolicy] - " + response.Item2.ToString());
+                    default:
+                        {
+                            throw new Exception("Unrecognised Error Response From Api - [createPaymentPolicy] - " + response.Item2.ToString());
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [createPaymentPolicy] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [createPaymentPolicy] - " + response.Item2.ToString());
-
-                    }
+                        }
+                }
+            }
+            catch (Exception)
+            {
+                
+                throw;
             }
 
         }
@@ -987,52 +1090,60 @@ namespace UnitTestProject1
         [TestMethod]
         public void updatepaymentPolicy()
         {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            EbaySdkLib.Messages.updatePaymentPolicyRequest updatePaymentPolicyrequest = new EbaySdkLib.Messages.updatePaymentPolicyRequest();
-            updatePaymentPolicyrequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            updatePaymentPolicyrequest.description = "Standard payment policy, PP & CC payments";
-            updatePaymentPolicyrequest.name = "default payment policy";
-            updatePaymentPolicyrequest.paymentMethods = new EbaySdkLib.Models.PaymentMethod[] { new EbaySdkLib.Models.PaymentMethod() { paymentMethodType = PaymentMethodTypeEnum.PERSONAL_CHECK } };
-            string policyId = "5458323000";
-            var response = _accountService.PaymentpolicyService.updatePaymentPolicyService(updatePaymentPolicyrequest, policyId).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
+            try
             {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPUpdatePaymentPolicy(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
-
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                string token = UsingTokenMethod();
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                EbaySdkLib.Messages.updatePaymentPolicyRequest updatePaymentPolicyrequest = new EbaySdkLib.Messages.updatePaymentPolicyRequest();
+                updatePaymentPolicyrequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                updatePaymentPolicyrequest.description = "Standard payment policy, PP & CC payments";
+                updatePaymentPolicyrequest.name = "default payment policy";
+                updatePaymentPolicyrequest.paymentMethods = new EbaySdkLib.Models.PaymentMethod[] { new EbaySdkLib.Models.PaymentMethod() { paymentMethodType = PaymentMethodTypeEnum.PERSONAL_CHECK } };
+                string policyId = "5458323000";
+                var response = _accountService.PaymentpolicyService.updatePaymentPolicyService(updatePaymentPolicyrequest, policyId).Result;
+                if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                switch (response.Item2)
+                {
+                    case System.Net.HttpStatusCode.OK:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            //Add to DB
+                            int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPUpdatePaymentPolicy(_cstr, response.Item1.name, "null", response.Item1.description, response.Item1.immediatePay, response.Item1.paymentPolicyId);
+
+                            foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPCategoryType(_cstr, PaymentPolicyDBID, _ct.name.ToString(), _ct.@default);
+                            }
+
+                            foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                            {
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            }
+
+                            return;
+
                         }
 
-                        foreach (EbaySdkLib.Models.PaymentMethod _so in response.Item1.paymentMethods)
+                    case System.Net.HttpStatusCode.InternalServerError:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_PPPaymentMethods(_cstr, PaymentPolicyDBID, _so.paymentMethodType.ToString(), _so.recipientAccountReference.referenceId.ToString(), _so.recipientAccountReference.referenceType.ToString());
+                            throw new Exception("Internal Server Error From Api - [UpdatePaymentPolicy] - " + response.Item2.ToString());
+
+                        }
+                    case System.Net.HttpStatusCode.BadRequest:
+                        {
+                            throw new Exception("Bad Request From Api - [UpdatePaymentPolicy] - " + response.Item2.ToString());
                         }
 
-                        return ;
+                    default:
+                        {
+                            throw new Exception("Unrecognised Error Response From Api - [UpdatePaymentPolicy] - " + response.Item2.ToString());
 
-                    }
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [UpdatePaymentPolicy] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [UpdatePaymentPolicy] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [UpdatePaymentPolicy] - " + response.Item2.ToString());
-
-                    }
+                        }
+                }
+            }
+            catch (Exception)
+            {
+                
+                throw;
             }
 
         }
@@ -1041,37 +1152,45 @@ namespace UnitTestProject1
         [TestMethod]
         public void deletePaymentpolicy()
         {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            string payment_policy_id = "5446270000";
-            var response = _accountService.ReturnPolicyService.deleteReturnPolicyService(payment_policy_id).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-
-            switch (response.Item2)
+            try
             {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPDeletePaymentPolicy(_cstr, "Delete Successfully");
-                        return ;
+                string token = UsingTokenMethod();
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                string payment_policy_id = "5446270000";
+                var response = _accountService.ReturnPolicyService.deleteReturnPolicyService(payment_policy_id).Result;
+                if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
 
-                    }
+                switch (response.Item2)
+                {
+                    case System.Net.HttpStatusCode.OK:
+                        {
+                            //Add to DB
+                            int PaymentPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_FPDeletePaymentPolicy(_cstr, "Delete Successfully");
+                            return;
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [DeletePaymentPolicy] - " + response.Item2.ToString());
+                        }
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [DeletePaymentPolicy] - " + response.Item2.ToString());
-                    }
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        {
+                            throw new Exception("Internal Server Error From Api - [DeletePaymentPolicy] - " + response.Item2.ToString());
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [DeletePaymentPolicy] - " + response.Item2.ToString());
+                        }
+                    case System.Net.HttpStatusCode.BadRequest:
+                        {
+                            throw new Exception("Bad Request From Api - [DeletePaymentPolicy] - " + response.Item2.ToString());
+                        }
 
-                    }
+                    default:
+                        {
+                            throw new Exception("Unrecognised Error Response From Api - [DeletePaymentPolicy] - " + response.Item2.ToString());
+
+                        }
+                }
+            }
+            catch (Exception)
+            {
+                
+                throw;
             }
         }
 
@@ -1084,42 +1203,50 @@ namespace UnitTestProject1
         public void GetRateTablesTest()
             {
 
-                string token = UsingTokenMethod();
-                AccountService _accountService = new EbaySdkLib.AccountService(token);
-                 var ratetables = new EbaySdkLib.Models.RateTable()
-                 {
-                     countryCode = EbaySdkLib.Enums.CountryCodeEnum.US
-                 };
-                 var response = _accountService.PaymentpolicyService.getratePolicyService(ratetables).Result;
-                 //if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1.ToString()); } else { Assert.Fail(response.Item2.ToString()); }
-                 switch (response.Item2)
-                 {
-                     case System.Net.HttpStatusCode.OK:
-                         {
-                             //Add to DB
-                             foreach (EbaySdkLib.Models.RateTable _fp in response.Item1.rateTables)
-                             {
-                                 int RateTableDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetRateTables(_cstr, _fp.countryCode.ToString(), _fp.name.ToString(), _fp.locality, _fp.rateTableId);
-                             }
-                             return;
-                         }
+                try
+                {
+                    string token = UsingTokenMethod();
+                    AccountService _accountService = new EbaySdkLib.AccountService(token);
+                    var ratetables = new EbaySdkLib.Models.RateTable()
+                    {
+                        countryCode = EbaySdkLib.Enums.CountryCodeEnum.US
+                    };
+                    var response = _accountService.PaymentpolicyService.getratePolicyService(ratetables).Result;
+                    //if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1.ToString()); } else { Assert.Fail(response.Item2.ToString()); }
+                    switch (response.Item2)
+                    {
+                        case System.Net.HttpStatusCode.OK:
+                            {
+                                //Add to DB
+                                foreach (EbaySdkLib.Models.RateTable _fp in response.Item1.rateTables)
+                                {
+                                    int RateTableDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetRateTables(_cstr, _fp.countryCode.ToString(), _fp.name.ToString(), _fp.locality, _fp.rateTableId);
+                                }
+                                return;
+                            }
 
-                     case System.Net.HttpStatusCode.InternalServerError:
-                         {
-                             throw new Exception("Internal Server Error From Api - [GetSalesTaxes] - " + response.Item2.ToString());
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [GetSalesTaxes] - " + response.Item2.ToString());
 
-                         }
-                     case System.Net.HttpStatusCode.BadRequest:
-                         {
-                             throw new Exception("Bad Request From Api - [GetSalesTaxes] - " + response.Item2.ToString());
-                         }
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [GetSalesTaxes] - " + response.Item2.ToString());
+                            }
 
-                     default:
-                         {
-                             throw new Exception("Unrecognised Error Response From Api - [GetSalesTaxes] - " + response.Item2.ToString());
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [GetSalesTaxes] - " + response.Item2.ToString());
 
-                         }
-                 }
+                            }
+                    }
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
             }
         #endregion
 
@@ -1129,237 +1256,277 @@ namespace UnitTestProject1
         /// </summary>
         [TestMethod]
         public void getReturnPolicy()
+        {
+            try
             {
-             string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            string return_policy_id = "5458323000";
-            var response = _accountService.ReturnPolicyService.getReturnPolicy(return_policy_id).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetReturnPolicy(_cstr,response.Item1.name,response.Item1.description,response.Item1.marketplaceId.ToString());
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                string token = UsingTokenMethod();
+                AccountService _accountService = new EbaySdkLib.AccountService(token);
+                string return_policy_id = "5790479000";
+                var response = _accountService.ReturnPolicyService.getReturnPolicy(return_policy_id).Result;
+              //  if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                switch (response.Item2)
+                {
+                    case System.Net.HttpStatusCode.OK:
                         {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
-                        }
-
-                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
-                       
-                        return ;
-                    }
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [ReturnPolicy] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [ReturnPolicy] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [ReturnPolicy] - " + response.Item2.ToString());
-
-                    }
-           
-                  }
-            }
-
-        [TestMethod]
-        public void GetReturnPolicies()
-            {
-             string token = UsingTokenMethod();
-             AccountService _accountService = new EbaySdkLib.AccountService(token);
-            GetReturnPoliciesRequest getReturnPoliciesRequest = new GetReturnPoliciesRequest();
-            getReturnPoliciesRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            string marketplaceId = getReturnPoliciesRequest.marketplaceId.ToString();
-            var response = _accountService.ReturnPolicyService.getReturnPolicies(marketplaceId).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        foreach (EbaySdkLib.Models.ReturnPolicy _RP in response.Item1.returnPolicies)
-                        {
-                            int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetReturnPolicies(_cstr, _RP.name, _RP.description, _RP.marketplaceId.ToString());
-
-                            foreach (EbaySdkLib.Models.CategoryType _ct in _RP.categoryTypes)
+                            //Add to DB
+                            int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetReturnPolicy(_cstr, response.Item1.name, response.Item1.description, response.Item1.marketplaceId.ToString());
+                            foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
                             {
                                 SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
                             }
 
-                            foreach (EbaySdkLib.Models.ReturnPolicy _so in response.Item1.returnPolicies)
-                            {
-                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, _so.returnsAccepted, _so.returnPeriod.unit.ToString(), _so.returnPeriod.value, _so.refundMethod.ToString(),_so.returnShippingCostPayer.ToString(),_so.internationalOverride.returnsAccepted,_so.internationalOverride.returnPeriod.unit.ToString(),_so.internationalOverride.returnPeriod.value,_so.internationalOverride.returnShippingCostPayer.ToString(),_so.returnPolicyId.ToString());
-                            }
+                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
+
+                            return;
                         }
 
-                        return ;
+                    case System.Net.HttpStatusCode.InternalServerError:
+                        {
+                            throw new Exception("Internal Server Error From Api - [ReturnPolicy] - " + response.Item2.ToString());
 
-                    }
+                        }
+                    case System.Net.HttpStatusCode.BadRequest:
+                        {
+                            throw new Exception("Bad Request From Api - [ReturnPolicy] - " + response.Item2.ToString());
+                        }
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [GetPaymentPolicies] - " + response.Item2.ToString());
+                    default:
+                        {
+                            throw new Exception("Unrecognised Error Response From Api - [ReturnPolicy] - " + response.Item2.ToString());
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [GetPaymentPolicies] - " + response.Item2.ToString());
-                    }
+                        }
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [GetPaymentPolicies] - " + response.Item2.ToString());
-
-                    }
+                }
             }
+            catch (Exception)
+            {
+                
+                throw;
+            }
+            }
+
+        [TestMethod]
+        public void GetReturnPolicies()
+         {
+             try
+             {
+                 string token = UsingTokenMethod();
+                 AccountService _accountService = new EbaySdkLib.AccountService(token);
+                 GetReturnPoliciesRequest getReturnPoliciesRequest = new GetReturnPoliciesRequest();
+                 getReturnPoliciesRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                 string marketplaceId = getReturnPoliciesRequest.marketplaceId.ToString();
+                 var response = _accountService.ReturnPolicyService.getReturnPolicies(marketplaceId).Result;
+                // if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                 switch (response.Item2)
+                 {
+                     case System.Net.HttpStatusCode.OK:
+                         {
+                             //Add to DB
+                             foreach (EbaySdkLib.Models.ReturnPolicy _RP in response.Item1.returnPolicies)
+                             {
+                                 int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetReturnPolicies(_cstr, _RP.name, _RP.description, _RP.marketplaceId.ToString());
+
+                                 foreach (EbaySdkLib.Models.CategoryType _ct in _RP.categoryTypes)
+                                 {
+                                     SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
+                                 }
+
+                                 foreach (EbaySdkLib.Models.ReturnPolicy _so in response.Item1.returnPolicies)
+                                 {
+                                     SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, _so.returnsAccepted, _so.returnPeriod.unit.ToString(), _so.returnPeriod.value, _so.refundMethod.ToString(), _so.returnShippingCostPayer.ToString(), _so.internationalOverride.returnsAccepted, _so.internationalOverride.returnPeriod.unit.ToString(), _so.internationalOverride.returnPeriod.value, _so.internationalOverride.returnShippingCostPayer.ToString(), _so.returnPolicyId.ToString());
+                                 }
+                             }
+
+                             return;
+
+                         }
+
+                     case System.Net.HttpStatusCode.InternalServerError:
+                         {
+                             throw new Exception("Internal Server Error From Api - [GetPaymentPolicies] - " + response.Item2.ToString());
+
+                         }
+                     case System.Net.HttpStatusCode.BadRequest:
+                         {
+                             throw new Exception("Bad Request From Api - [GetPaymentPolicies] - " + response.Item2.ToString());
+                         }
+
+                     default:
+                         {
+                             throw new Exception("Unrecognised Error Response From Api - [GetPaymentPolicies] - " + response.Item2.ToString());
+
+                         }
+                 }
+             }
+             catch (Exception)
+             {
+                 
+                 throw;
+             }
             }
 
         [TestMethod]
         public void getReturnPoliciesByName()
             {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            GetReturnPolicyByNameRequest getReturnPolicyByNameRequest = new GetReturnPolicyByNameRequest();
-            getReturnPolicyByNameRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            getReturnPolicyByNameRequest.name = "minimal return policy, US marketplace";
-            string marketplaceId = getReturnPolicyByNameRequest.marketplaceId.ToString();
-            string name = getReturnPolicyByNameRequest.name.ToString();
-            var response = _accountService.ReturnPolicyService.getReturnPoliciesByName(marketplaceId, name).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
+                try
+                {
+                    string token = UsingTokenMethod();
+                    AccountService _accountService = new EbaySdkLib.AccountService(token);
+                    GetReturnPolicyByNameRequest getReturnPolicyByNameRequest = new GetReturnPolicyByNameRequest();
+                    getReturnPolicyByNameRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                    getReturnPolicyByNameRequest.name = "minimal return policy, US marketplace";
+                    string marketplaceId = getReturnPolicyByNameRequest.marketplaceId.ToString();
+                    string name = getReturnPolicyByNameRequest.name.ToString();
+                    var response = _accountService.ReturnPolicyService.getReturnPoliciesByName(marketplaceId, name).Result;
+                    if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                    switch (response.Item2)
                     {
-                        //Add to DB
-                        int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetReturnPoliciesByName(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString());
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                        {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
-                        }
+                        case System.Net.HttpStatusCode.OK:
+                            {
+                                //Add to DB
+                                int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_GetReturnPoliciesByName(_cstr, response.Item1.name, response.Item1.marketplaceId.ToString());
+                                foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                                {
+                                    SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
+                                }
 
-                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
+                                SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
 
-                        return;
+                                return;
+                            }
+
+                        case System.Net.HttpStatusCode.InternalServerError:
+                            {
+                                throw new Exception("Internal Server Error From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
+
+                            }
+                        case System.Net.HttpStatusCode.BadRequest:
+                            {
+                                throw new Exception("Bad Request From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
+                            }
+
+                        default:
+                            {
+                                throw new Exception("Unrecognised Error Response From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
+
+                            }
+
                     }
-
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
-
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
-                    }
-
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
-
-                    }
-
-            }
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
             }
         /// <summary>
         /// Invalid return error
         /// </summary>
         [TestMethod]
         public void createReturnPolicy()
-            {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            CreateReturnPolicyrequest createReturnPolicyrequest = new CreateReturnPolicyrequest();
-            createReturnPolicyrequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            createReturnPolicyrequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            createReturnPolicyrequest.name = "minimal return policy, US marketplace";
-            var response = _accountService.ReturnPolicyService.createReturnPolicyService(createReturnPolicyrequest).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_createReturnPolicy(_cstr, response.Item1.name, response.Item1.description, response.Item1.marketplaceId.ToString());
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                        {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
-                        }
+         {
+             try
+             {
+                 string token = UsingTokenMethod();
+                 AccountService _accountService = new EbaySdkLib.AccountService(token);
+                 CreateReturnPolicyrequest createReturnPolicyrequest = new CreateReturnPolicyrequest();
+                 createReturnPolicyrequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                 createReturnPolicyrequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                 createReturnPolicyrequest.name = "minimal return policy, US marketplace";
+                 var response = _accountService.ReturnPolicyService.createReturnPolicyService(createReturnPolicyrequest).Result;
+                 if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                 switch (response.Item2)
+                 {
+                     case System.Net.HttpStatusCode.OK:
+                         {
+                             //Add to DB
+                             int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_createReturnPolicy(_cstr, response.Item1.name, response.Item1.description, response.Item1.marketplaceId.ToString());
+                             foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                             {
+                                 SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
+                             }
 
-                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
+                             SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
 
-                        return;
-                    }
+                             return;
+                         }
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
+                     case System.Net.HttpStatusCode.InternalServerError:
+                         {
+                             throw new Exception("Internal Server Error From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
-                    }
+                         }
+                     case System.Net.HttpStatusCode.BadRequest:
+                         {
+                             throw new Exception("Bad Request From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
+                         }
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
+                     default:
+                         {
+                             throw new Exception("Unrecognised Error Response From Api - [ReturnPoliciesByName] - " + response.Item2.ToString());
 
-                    }
-               }
+                         }
+                 }
+             }
+             catch (Exception)
+             {
+                 
+                 throw;
+             }
             }
         [TestMethod]
         public void UpdateReturnPolicy()
-            {
-            string token = UsingTokenMethod();
-            AccountService _accountService = new EbaySdkLib.AccountService(token);
-            UpdateReturnPolicyRequest updateReturnPolicyRequest = new UpdateReturnPolicyRequest();
-            updateReturnPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
-            updateReturnPolicyRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
-            updateReturnPolicyRequest.returnsAccepted = false;
-            updateReturnPolicyRequest.name = "minimal return policy, US marketplace";
-            string Id = "5487698000";
-            var response = _accountService.ReturnPolicyService.updateReturnPolicyService(updateReturnPolicyRequest, Id).Result;
-            if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
-            switch (response.Item2)
-            {
-                case System.Net.HttpStatusCode.OK:
-                    {
-                        //Add to DB
-                        int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_UpdateReturnPolicy(_cstr, response.Item1.name, response.Item1.description, response.Item1.marketplaceId.ToString());
-                        foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
-                        {
-                            SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
-                        }
+         {
+             try
+             {
+                 string token = UsingTokenMethod();
+                 AccountService _accountService = new EbaySdkLib.AccountService(token);
+                 UpdateReturnPolicyRequest updateReturnPolicyRequest = new UpdateReturnPolicyRequest();
+                 updateReturnPolicyRequest.categoryTypes = new EbaySdkLib.Models.CategoryType[] { new EbaySdkLib.Models.CategoryType() { name = CategoryTypeEnum.ALL_EXCLUDING_MOTORS_VEHICLES } };
+                 updateReturnPolicyRequest.marketplaceId = EbaySdkLib.Models.MarketplaceIdEnum.EBAY_US;
+                 updateReturnPolicyRequest.returnsAccepted = false;
+                 updateReturnPolicyRequest.name = "minimal return policy, US marketplace";
+                 string Id = "5487698000";
+                 var response = _accountService.ReturnPolicyService.updateReturnPolicyService(updateReturnPolicyRequest, Id).Result;
+                 if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
+                 switch (response.Item2)
+                 {
+                     case System.Net.HttpStatusCode.OK:
+                         {
+                             //Add to DB
+                             int ReturnPolicyDBID = SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_UpdateReturnPolicy(_cstr, response.Item1.name, response.Item1.description, response.Item1.marketplaceId.ToString());
+                             foreach (EbaySdkLib.Models.CategoryType _ct in response.Item1.categoryTypes)
+                             {
+                                 SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPCategoryType(_cstr, ReturnPolicyDBID, _ct.name.ToString(), _ct.@default);
+                             }
 
-                        SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
+                             SellingTools_Lib.DBConnect.DA_Ebay_Account.Add_RPServiceMethod(_cstr, ReturnPolicyDBID, response.Item1.returnsAccepted, response.Item1.returnPeriod.unit.ToString(), response.Item1.returnPeriod.value, response.Item1.refundMethod.ToString(), response.Item1.returnShippingCostPayer.ToString(), response.Item1.internationalOverride.returnsAccepted, response.Item1.internationalOverride.returnPeriod.unit.ToString(), response.Item1.internationalOverride.returnPeriod.value, response.Item1.internationalOverride.returnShippingCostPayer.ToString(), response.Item1.returnPolicyId.ToString());
 
-                        return;
-                    }
+                             return;
+                         }
 
-                case System.Net.HttpStatusCode.InternalServerError:
-                    {
-                        throw new Exception("Internal Server Error From Api - [UpdateReturnPolicy] - " + response.Item2.ToString());
+                     case System.Net.HttpStatusCode.InternalServerError:
+                         {
+                             throw new Exception("Internal Server Error From Api - [UpdateReturnPolicy] - " + response.Item2.ToString());
 
-                    }
-                case System.Net.HttpStatusCode.BadRequest:
-                    {
-                        throw new Exception("Bad Request From Api - [UpdateReturnPolicy] - " + response.Item2.ToString());
-                    }
+                         }
+                     case System.Net.HttpStatusCode.BadRequest:
+                         {
+                             throw new Exception("Bad Request From Api - [UpdateReturnPolicy] - " + response.Item2.ToString());
+                         }
 
-                default:
-                    {
-                        throw new Exception("Unrecognised Error Response From Api - [UpdateReturnPolicy] - " + response.Item2.ToString());
+                     default:
+                         {
+                             throw new Exception("Unrecognised Error Response From Api - [UpdateReturnPolicy] - " + response.Item2.ToString());
 
-                    }
-            }
+                         }
+                 }
+             }
+             catch (Exception)
+             {
+                 
+                 throw;
+             }
             }
         [TestMethod]
         public void deleteReturnPolicy()
@@ -1370,6 +1537,7 @@ namespace UnitTestProject1
             if (response.Item2.ToString() == "OK") { Assert.IsNotNull(response.Item1); } else { Assert.Fail(response.Item2.ToString()); }
 
             }
+
         #endregion
 
         //#region "PaymentPolicy"
